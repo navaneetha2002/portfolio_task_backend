@@ -1,20 +1,22 @@
 package com.example.demo.entity;
+
 import jakarta.persistence.*;
+
 import java.util.UUID;
+
 @Entity
-public class Skills {
-
-
+public class Education {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
 
     private UUID id;
 
-    @Column(nullable = false)  // Ensure 'name' is not null
-    private String name; // New column 'name'
+    @Column(nullable = false)
+    private String name;
 
-    @Lob  // Use @Lob for binary data
-    private byte[] image;
+    @Column(nullable = false )
+    @Lob
+    private String description;
 
     public UUID getId() {
         return id;
@@ -22,14 +24,6 @@ public class Skills {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
     }
 
     public String getName() {
@@ -40,5 +34,11 @@ public class Skills {
         this.name = name;
     }
 
-}
+    public String getDescription() {
+        return description;
+    }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+}

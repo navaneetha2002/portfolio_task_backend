@@ -1,7 +1,5 @@
 package com.example.demo.controller;
 
-
-import com.example.demo.entity.Project;
 import com.example.demo.entity.Skills;
 import com.example.demo.service.SkillsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +22,10 @@ public class SkillsController {
 
     // Create a new skill
     @PostMapping
-    public ResponseEntity<Skills> createSkill(@RequestParam("image") MultipartFile file) throws IOException {
+    public ResponseEntity<Skills> createSkill(@RequestParam("name") String name, @RequestParam("image") MultipartFile file) throws IOException {
         Skills skill = new Skills();
-        skill.setImage(file.getBytes());
+        skill.setName(name);  // Set the name from the request
+        skill.setImage(file.getBytes());  // Set the image file as bytes
         Skills savedSkill = skillsService.saveSkill(skill);
         return ResponseEntity.ok(savedSkill);
     }
@@ -45,28 +44,40 @@ public class SkillsController {
         return skill.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Update a skill
     @PutMapping("/{id}")
-    public ResponseEntity<Skills> updateSkill(@PathVariable UUID id, @RequestParam("image") MultipartFile file) throws IOException {
-        Skills updatedSkill = new Skills();
-        updatedSkill.setImage(file.getBytes());
-        Skills skill = skillsService.updateSkill(id, updatedSkill);
-        return ResponseEntity.ok(skill);
+    public ResponseEntity<Skills> updateSkill(
+            @PathVariable UUID id,
+            @RequestParam("name") String name,
+            @RequestParam("image") MultipartFile file
+    ) throws IOException {
+        Optional<Skills> existingSkillOpt = skillsService.getSkillById(id);
+        if (existingSkillOpt.isPresent()) {
+            Skills updatedSkill = existingSkillOpt.get();
+            updatedSkill.setName(name);  // Update the name
+            updatedSkill.setImage(file.getBytes());  // Update the image
+
+            Skills savedSkill = skillsService.saveSkill(updatedSkill);  // Save the updated skill
+
+            return ResponseEntity.ok(savedSkill);
+        }
+        return ResponseEntity.notFound().build();
     }
+
 
     // Delete a skill
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteSkill(@PathVariable UUID id) {
         boolean isDeleted = skillsService.deleteSkill(id);
-        if(isDeleted){
-            return ResponseEntity.ok("Skill deleted successfully" );
+        if (isDeleted) {
+            return ResponseEntity.ok("Skill deleted successfully");
         }
         return ResponseEntity.noContent().build();
     }
 
+    // Retrieve skill image by ID
     @GetMapping("/{id}/image")
     public ResponseEntity<byte[]> getSkillsImage(@PathVariable UUID id) {
-        Optional<Skills> skill = skillsService.getSkillById(id); // Use getSkillById
+        Optional<Skills> skill = skillsService.getSkillById(id);
         if (skill.isPresent() && skill.get().getImage() != null) {
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG)
@@ -74,5 +85,4 @@ public class SkillsController {
         }
         return ResponseEntity.notFound().build();
     }
-
 }
